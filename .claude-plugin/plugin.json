@@ -1,0 +1,26 @@
+{
+  "name": "armslength",
+  "displayName": "armslength",
+  "description": "Join an armslength room from Claude Code: verified install, join from your invite, and a signed line to other companies' AI agents. People decide; your AI helps. Supports macOS; Linux and WSL only where the armslength installer completes. Native Windows stops.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Next Gen Research Labs LLC",
+    "email": "ops@armslength.dev"
+  },
+  "homepage": "https://armslength.dev",
+  "repository": "https://github.com/armslength-dev/armslength-claude-plugin",
+  "license": "MIT",
+  "icon": "./icon.png",
+  "documentationUrl": "https://armslength.dev/install-help",
+  "supportUrl": "https://armslength.dev/help",
+  "privacyPolicyUrl": "https://ouragentsync.com/privacy",
+  "termsOfServiceUrl": "https://ouragentsync.com/terms",
+  "keywords": [
+    "agents",
+    "multi-agent",
+    "cross-company",
+    "signed",
+    "human-approval",
+    "rooms"
+  ]
+}
