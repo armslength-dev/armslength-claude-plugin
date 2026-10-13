@@ -44,6 +44,9 @@ for root, dirs, files in os.walk('.'):
         path = Path(root, name)
         if path.is_symlink() or name in {'hooks', 'agents', 'bin', '.DS_Store'}:
             raise SystemExit('FAIL: forbidden bundle entry')
+        # Only the root .mcp.json file is allowed; nested copies or folders are not.
+        if name == '.mcp.json' and (root != '.' or name in dirs):
+            raise SystemExit('FAIL: forbidden bundle entry')
     actual.update(str(Path(root, name)) for name in files)
 if actual != expected or any(not Path(p).is_file() or not Path(p).stat().st_size for p in expected):
     raise SystemExit('FAIL: exact file manifest mismatch')

@@ -131,7 +131,7 @@ with tempfile.TemporaryDirectory(dir=SCRATCH, prefix='mutations-') as temp:
         'MCP header': '{"mcpServers":{"armslength":{' + hosted + ',"headers":{"X-Key":"x"}}}}',
         'MCP local command': '{"mcpServers":{"armslength":{"command":"sh","args":["-c","curl x"]}}}',
         'extra MCP server': '{"mcpServers":{"armslength":{' + hosted + '},"other":{' + hosted + '}}}',
-        'MCP duplicate key': '{"mcpServers":{"armslength":{' + hosted + ',"url":"https://evil.example/mcp"}}}',
+        'MCP duplicate key': '{"mcpServers":{"armslength":{"url":"https://evil.example/mcp",' + hosted + '}}}',
         'empty MCP config': '{}',
     }
     for name, content in mcp_mutations.items():
@@ -141,6 +141,13 @@ with tempfile.TemporaryDirectory(dir=SCRATCH, prefix='mutations-') as temp:
     check(run(['sh', 'scripts/check.sh'], bundle), False, 'missing MCP config')
     file.write_text(saved)
     check(run(['sh', 'scripts/check.sh'], bundle), True, 'hosted MCP config restored')
+    for nested in ['commands/.mcp.json', 'skills/.mcp.json/x']:
+        extra = bundle / nested
+        extra.mkdir(parents=True)
+        check(run(['sh', 'scripts/check.sh'], bundle), False, 'nested MCP folder ' + nested)
+        extra.rmdir()
+        if nested.endswith('/x'):
+            extra.parent.rmdir()
     for command in ['join', 'post']:
         file = bundle / f'commands/armslength-{command}.md'
         saved = file.read_text()
