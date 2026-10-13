@@ -121,11 +121,33 @@ with tempfile.TemporaryDirectory(dir=SCRATCH, prefix='mutations-') as temp:
             file.write_text(saved.replace('---\n', '---\nallowed-tools: ' + grant + '\n', 1))
             check(run(['sh', 'scripts/check.sh'], bundle), False, f'{command} grant {grant}')
             file.write_text(saved)
-    for scheme in ['http', 'https']:
-        file = bundle / '.mcp.json'
-        file.write_text('{"mcpServers":{"armslength":{"type":"http","url":"' + scheme + '://evil.example/mcp"}}}')
-        check(run(['sh', 'scripts/check.sh'], bundle), False, f'{scheme} MCP present')
-        file.unlink()
+    file = bundle / '.mcp.json'
+    saved = file.read_text()
+    hosted = '"type":"http","url":"https://ouragentsync.com/mcp"'
+    mcp_mutations = {
+        'http evil MCP': '{"mcpServers":{"armslength":{"type":"http","url":"http://evil.example/mcp"}}}',
+        'https evil MCP': '{"mcpServers":{"armslength":{"type":"http","url":"https://evil.example/mcp"}}}',
+        'plain HTTP hosted MCP': '{"mcpServers":{"armslength":{"type":"http","url":"http://ouragentsync.com/mcp"}}}',
+        'MCP header': '{"mcpServers":{"armslength":{' + hosted + ',"headers":{"X-Key":"x"}}}}',
+        'MCP local command': '{"mcpServers":{"armslength":{"command":"sh","args":["-c","curl x"]}}}',
+        'extra MCP server': '{"mcpServers":{"armslength":{' + hosted + '},"other":{' + hosted + '}}}',
+        'MCP duplicate key': '{"mcpServers":{"armslength":{"url":"https://evil.example/mcp",' + hosted + '}}}',
+        'empty MCP config': '{}',
+    }
+    for name, content in mcp_mutations.items():
+        file.write_text(content)
+        check(run(['sh', 'scripts/check.sh'], bundle), False, name)
+    file.unlink()
+    check(run(['sh', 'scripts/check.sh'], bundle), False, 'missing MCP config')
+    file.write_text(saved)
+    check(run(['sh', 'scripts/check.sh'], bundle), True, 'hosted MCP config restored')
+    for nested in ['commands/.mcp.json', 'skills/.mcp.json/x']:
+        extra = bundle / nested
+        extra.mkdir(parents=True)
+        check(run(['sh', 'scripts/check.sh'], bundle), False, 'nested MCP folder ' + nested)
+        extra.rmdir()
+        if nested.endswith('/x'):
+            extra.parent.rmdir()
     for command in ['join', 'post']:
         file = bundle / f'commands/armslength-{command}.md'
         saved = file.read_text()
@@ -172,6 +194,8 @@ with tempfile.TemporaryDirectory(dir=SCRATCH, prefix='structure-') as temp:
             check(run(['/bin/sh', 'scripts/check.sh'], bundle), False, f'A6 {manifest} inline {key}')
         file.write_text(original.replace('{', '{"name":"duplicate",', 1))
         check(run(['/bin/sh', 'scripts/check.sh'], bundle), False, manifest + ' duplicate key')
+        file.write_text(original.replace('"version": "0.2.0"', '"version": "9.9.9"'))
+        check(run(['/bin/sh', 'scripts/check.sh'], bundle), False, manifest + ' version mismatch')
         file.write_text(original)
     for target in [SKILL, 'commands/armslength-join.md', 'commands/armslength-post.md', 'commands/armslength-status.md']:
         file = bundle / target
