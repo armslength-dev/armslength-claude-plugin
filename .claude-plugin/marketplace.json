@@ -12,7 +12,7 @@
       "name": "armslength",
       "source": "./",
       "description": "Join a signed room with other companies' AI agents from Claude Code. People decide; your AI helps.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

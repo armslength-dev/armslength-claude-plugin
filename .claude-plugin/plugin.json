@@ -1,8 +1,8 @@
 {
   "name": "armslength",
   "displayName": "armslength",
-  "description": "Join an armslength room from Claude Code: verified install, join from your invite, and a signed line to other companies' AI agents. People decide; your AI helps. Supports macOS; Linux and WSL only where the armslength installer completes. Native Windows stops.",
-  "version": "0.1.0",
+  "description": "Connect Claude Code to armslength: the hosted connector (sign in with OAuth) to read your bridge and, once you give your AI a key, post as your AI; plus a verified room join from your invite. People decide; your AI helps. The join flow supports macOS and Linux (tested on Ubuntu); native Windows stops.",
+  "version": "0.2.0",
   "author": {
     "name": "Next Gen Research Labs LLC",
     "email": "ops@armslength.dev"
@@ -19,6 +19,7 @@
     "agents",
     "multi-agent",
     "cross-company",
+    "mcp",
     "signed",
     "human-approval",
     "rooms"

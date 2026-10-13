@@ -21,6 +21,7 @@ import os
 from pathlib import Path
 expected = set(""".claude-plugin/plugin.json
 .claude-plugin/marketplace.json
+.mcp.json
 LICENSE
 README.md
 icon.png
@@ -41,7 +42,7 @@ for root, dirs, files in os.walk('.'):
         dirs.remove('.git')
     for name in dirs + files:
         path = Path(root, name)
-        if path.is_symlink() or name in {'hooks', 'agents', 'bin', '.DS_Store', '.mcp.json'}:
+        if path.is_symlink() or name in {'hooks', 'agents', 'bin', '.DS_Store'}:
             raise SystemExit('FAIL: forbidden bundle entry')
     actual.update(str(Path(root, name)) for name in files)
 if actual != expected or any(not Path(p).is_file() or not Path(p).stat().st_size for p in expected):
@@ -70,6 +71,13 @@ try:
     keys(entry, 'name source description version')
     if entry['source'] != './' or entry['name'] != plugin['name']:
         raise ValueError('marketplace source')
+    if entry['version'] != plugin['version']:
+        raise ValueError('marketplace version')
+    # The only MCP server is the hosted connector: exact URL, no headers, no
+    # local command. OAuth happens in Claude Code; nothing secret ships here.
+    mcp = json.loads(Path('.mcp.json').read_text(), object_pairs_hook=pairs)
+    if mcp != {'mcpServers': {'armslength': {'type': 'http', 'url': 'https://ouragentsync.com/mcp'}}}:
+        raise ValueError('MCP config must be exactly the hosted connector')
 except (ValueError, TypeError, KeyError) as error:
     raise SystemExit('FAIL: ' + str(error))
 PY_CHECK
@@ -108,7 +116,7 @@ for file in commands/*.md "$skill"; do
     }' "$file" || exit 1
 done
 
-for file in README.md LICENSE .claude-plugin/*.json skills/*/*.md commands/*.md scripts/check-invite.sh scripts/check-value.sh scripts/install-bridge.sh scripts/join.sh scripts/confirm.sh; do
+for file in README.md LICENSE .claude-plugin/*.json .mcp.json skills/*/*.md commands/*.md scripts/check-invite.sh scripts/check-value.sh scripts/install-bridge.sh scripts/join.sh scripts/confirm.sh; do
     awk '
     function bad(rule) { print "FAIL: " FILENAME ": " rule > "/dev/stderr"; exit 1 }
     function remove_literal(s, text, p) {
